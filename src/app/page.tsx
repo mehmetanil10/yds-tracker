@@ -11,6 +11,7 @@ import {
   Cell,
 } from "recharts";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface Stats {
   totalXP: number;
@@ -24,6 +25,11 @@ const DAY_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") router.push("/landing");
+  }, [status, router]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [leaders, setLeaders] = useState<
     { id: string; name: string; totalXP: number }[]
