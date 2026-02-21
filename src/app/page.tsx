@@ -25,12 +25,23 @@ const DAY_TR = ["Paz", "Pzt", "Sal", "Çar", "Per", "Cum", "Cmt"];
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
-
+  const [leaders, setLeaders] = useState<
+    { id: string; name: string; totalXP: number }[]
+  >([]);
   useEffect(() => {
     if (status !== "authenticated") return;
     fetch("/api/stats")
       .then((r) => r.json())
-      .then(setStats);
+      .then((data) => {
+        if (data && typeof data.totalXP === "number") setStats(data);
+      })
+      .catch(() => {});
+    fetch("/api/leaderboard")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setLeaders(data);
+      })
+      .catch(() => {});
   }, [status]);
 
   if (!stats)
@@ -474,6 +485,90 @@ export default function Dashboard() {
               );
             })}
           </div>
+        </div>
+        {/* Leaderboard */}
+        <div className="card" style={{ marginTop: 20 }}>
+          <div style={{ fontWeight: 800, marginBottom: 16 }}>
+            🏆 Liderlik Sıralaması
+          </div>
+          {leaders.length === 0 ? (
+            <div
+              style={{
+                color: "var(--muted)",
+                textAlign: "center",
+                padding: "24px 0",
+                fontFamily: "IBM Plex Mono, monospace",
+                fontSize: 13,
+              }}
+            >
+              henüz yeterli veri yok
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {leaders.map((u, i) => {
+                const isMe = u.id === (session?.user as any)?.id;
+                const medal =
+                  i === 0
+                    ? "🥇"
+                    : i === 1
+                      ? "🥈"
+                      : i === 2
+                        ? "🥉"
+                        : `${i + 1}.`;
+                return (
+                  <div
+                    key={u.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      background: isMe
+                        ? "rgba(245,158,11,0.08)"
+                        : "var(--surface2)",
+                      border: `1px solid ${isMe ? "rgba(245,158,11,0.3)" : "transparent"}`,
+                      borderRadius: 10,
+                      padding: "12px 16px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: "IBM Plex Mono, monospace",
+                        fontSize: 16,
+                        width: 28,
+                        textAlign: "center",
+                      }}
+                    >
+                      {medal}
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontWeight: isMe ? 800 : 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      {u.name}{" "}
+                      {isMe && (
+                        <span style={{ color: "var(--accent)", fontSize: 11 }}>
+                          (sen)
+                        </span>
+                      )}
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: "IBM Plex Mono, monospace",
+                        fontWeight: 700,
+                        color: "var(--accent)",
+                        fontSize: 14,
+                      }}
+                    >
+                      {u.totalXP.toLocaleString()} XP
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </Shell>
