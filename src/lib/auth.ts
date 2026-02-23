@@ -29,7 +29,6 @@ export const authOptions: NextAuthOptions = {
 
         const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) return null;
-        if (!user.verified) return null;
 
         return { id: user.id, email: user.email, name: user.name };
       },

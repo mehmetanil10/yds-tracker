@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { sendVerificationEmail } from "@/lib/email";
-
-function generateCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 export async function POST(req: NextRequest) {
   const { name, email, password } = await req.json();
@@ -26,24 +21,10 @@ export async function POST(req: NextRequest) {
   }
 
   const hashed = await bcrypt.hash(password, 12);
-  const code = generateCode();
-  const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 dakika
-
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashed,
-      verified: false,
-      verifyToken: code,
-      verifyExpiry: expiry,
-    },
+  const user = await prisma.user.create({
+    data: { name, email, password: hashed },
+    select: { id: true, email: true, name: true },
   });
 
-  await sendVerificationEmail(email, code);
-
-  return NextResponse.json(
-    { message: "Doğrulama kodu emailine gönderildi" },
-    { status: 201 },
-  );
+  return NextResponse.json(user, { status: 201 });
 }

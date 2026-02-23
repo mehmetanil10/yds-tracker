@@ -9,8 +9,6 @@ export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<"register" | "verify">("register");
-  const [code, setCode] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,28 +24,6 @@ export default function RegisterPage() {
     if (!res.ok) {
       const data = await res.json();
       setError(data.error ?? "Kayıt başarısız");
-      setLoading(false);
-      return;
-    }
-
-    setStep("verify");
-    setLoading(false);
-  };
-
-  const verify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const res = await fetch("/api/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: form.email, code }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "Doğrulama başarısız");
       setLoading(false);
       return;
     }
@@ -78,9 +54,7 @@ export default function RegisterPage() {
             YDS<span style={{ color: "var(--accent)" }}>XP</span>
           </div>
           <div style={{ color: "var(--muted)", marginTop: 6, fontSize: 14 }}>
-            {step === "register"
-              ? "Hesap oluştur, çalışmaya başla"
-              : "Email adresini doğrula"}
+            Hesap oluştur, çalışmaya başla
           </div>
         </div>
 
@@ -90,96 +64,40 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {step === "verify" ? (
-          <form onSubmit={verify} style={{ display: "grid", gap: 14 }}>
-            <div
-              style={{
-                color: "var(--muted)",
-                fontSize: 13,
-                textAlign: "center",
-                lineHeight: 1.6,
-              }}
-            >
-              <strong style={{ color: "var(--text)" }}>{form.email}</strong>{" "}
-              adresine 6 haneli doğrulama kodu gönderdik.
-            </div>
-            <input
-              className="input"
-              placeholder="000000"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              maxLength={6}
-              style={{
-                textAlign: "center",
-                fontSize: 28,
-                letterSpacing: 10,
-                fontFamily: "IBM Plex Mono, monospace",
-              }}
-              required
-            />
-            <button
-              className="btn-primary"
-              type="submit"
-              disabled={loading || code.length !== 6}
-              style={{ width: "100%" }}
-            >
-              {loading ? "Doğrulanıyor..." : "Doğrula ve Giriş Yap"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setStep("register");
-                setCode("");
-                setError("");
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                color: "var(--muted)",
-                cursor: "pointer",
-                fontSize: 13,
-                textAlign: "center",
-              }}
-            >
-              ← Geri dön
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
-            <input
-              className="input"
-              type="text"
-              placeholder="Adın (opsiyonel)"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-            <input
-              className="input"
-              type="email"
-              placeholder="Email adresi"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-            />
-            <input
-              className="input"
-              type="password"
-              placeholder="Şifre (en az 6 karakter)"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              minLength={6}
-              required
-            />
-            <button
-              className="btn-primary"
-              type="submit"
-              disabled={loading}
-              style={{ width: "100%", marginTop: 4 }}
-            >
-              {loading ? "Oluşturuluyor..." : "Hesap Oluştur"}
-            </button>
-          </form>
-        )}
+        <form onSubmit={submit} style={{ display: "grid", gap: 14 }}>
+          <input
+            className="input"
+            type="text"
+            placeholder="Adın (opsiyonel)"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <input
+            className="input"
+            type="email"
+            placeholder="Email adresi"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+          <input
+            className="input"
+            type="password"
+            placeholder="Şifre (en az 6 karakter)"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            minLength={6}
+            required
+          />
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={loading}
+            style={{ width: "100%", marginTop: 4 }}
+          >
+            {loading ? "Oluşturuluyor..." : "Hesap Oluştur"}
+          </button>
+        </form>
 
         <div className="divider" />
 
